@@ -1,0 +1,4 @@
+GOOGLE_CLIENT_ID=cole_aqui_o_client_id
+GOOGLE_CLIENT_SECRET=cole_aqui_o_client_secret
+REDIRECT_URI=https://buticonelas-tradutor.vercel.app/api/callback
+ANTHROPIC_API_KEY=cole_aqui_a_chave_anthropic
