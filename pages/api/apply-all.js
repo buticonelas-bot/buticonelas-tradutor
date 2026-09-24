@@ -28,14 +28,19 @@ export default async function handler(req, res) {
     const youtube = google.youtube({ version: 'v3', auth: oauth2Client });
 
     const videoData = await youtube.videos.list({
-      part: ['snippet', 'localizations'],
+      part: ['snippet', 'localizations', 'status'],
       id: [videoId]
     });
+
+    if (!videoData.data.items?.length) {
+      return res.status(404).json({ error: 'Vídeo não encontrado. Talvez não tenhas permissão para este vídeo.' });
+    }
 
     const video = videoData.data.items[0];
     const snippet = video.snippet;
     const existing = video.localizations || {};
 
+    // Check if it's a live stream - localizations still work but need snippet update first
     const parts = ['localizations'];
     const requestBody = {
       id: videoId,
@@ -50,7 +55,10 @@ export default async function handler(req, res) {
     await youtube.videos.update({ part: parts, requestBody });
     res.json({ success: true, count: Object.keys(localizations).length });
   } catch (err) {
-    console.error('Apply all error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Apply all error:', err.message, err.code);
+    const msg = err.code === 403
+      ? 'Sem permissão para editar este vídeo. Garante que autorizaste com o canal correto.'
+      : err.message;
+    res.status(500).json({ error: msg });
   }
 }
